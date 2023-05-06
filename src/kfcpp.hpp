@@ -157,7 +157,6 @@ public:
         }
         Matrix2d L, U;
         LUDescomposition(L, U);
-        Matrix2d testA = L * U;
         Matrix2d Linv = Matrix2d::zeros(m, m);
         Matrix2d Uinv = Matrix2d::zeros(m, m);
         for (int j = 0; j < m; j++) {
