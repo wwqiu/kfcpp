@@ -51,7 +51,6 @@ int main()
     kfcpp::Matrix2d init_state = kfcpp::Matrix2d::zeros(4, 1);
     mkf.Init(init_state);
 
-
     char ch = 0;
     cv::Mat display_image(600, 800, CV_8UC3);
     cv::namedWindow("Mouse Track");
@@ -61,23 +60,23 @@ int main()
     while (ch != 'q' && ch != 'Q')
     {
         display_image = cv::Scalar::all(0);
-
-        // predict
-        KF.predict();
-        mkf.Predict();
-
-        // measure
+        
         meas.at<float>(0) = mouse_pos.x;
         meas.at<float>(1) = mouse_pos.y;
 
+        // opencv
+        KF.predict();
         cv::Mat state_cv = KF.correct(meas);
+
+        // kfcpp
+        mkf.Predict();
         mkf.Measure(toMatrix2d(meas));
         cv::Mat state_kfcpp = toCvMat(mkf.GetState());
 
         // visualize
+        cv::Point2f meas_point(meas.at<float>(0), meas.at<float>(1));
         cv::Point2f point0(state_cv.at<float>(0), state_cv.at<float>(1));
         cv::Point2f point1(state_kfcpp.at<float>(0), state_kfcpp.at<float>(1));
-        cv::Point2f meas_point(meas.at<float>(0), meas.at<float>(1));
         char text[20];
         printf("opencv(%0.2f,%0.2f), kfcpp(%0.2f,%0.2f)\n", point0.x, point0.y, point1.x, point1.y);
 
