@@ -22,6 +22,92 @@
 
 namespace kfcpp {
 
+// Prediction
+// 
+// x' = Fx + u
+// P' = PF(P_t) + Q_
+//
+// Measurement
+// y = z - H x'
+// S = HP'(H_t) + R
+// K = P'(H_t)(S_inv)
+// x = x' + Ky
+// P = (I - KH)P'
+//
+class KalmanFilter {
+
+public:
+    bool IsInit() {
+        return is_initialized_;
+    }
+
+    void Init(Matrix2d x) {
+        x_ = x;
+        is_initialized_ = true;
+    }
+
+    Matrix2d GetState() {
+        return x_;
+    }
+
+    void Predict() {
+        x_ = F_ * x_;
+        Matrix2d Ft = F_.t();
+        P_ = F_ * P_ * Ft + Q_;
+    }
+
+    void Measure(const Matrix2d& z) {
+        Matrix2d y = z - H_ * x_;
+        Matrix2d S = H_ * P_ * H_.t() + R_;
+        Matrix2d K = P_ * H_.t() * S.inv();
+        x_ = x_ + (K * y);
+        int size = x_.cols * x_.rows;
+        Matrix2d I = Matrix2d::eye(size, size);
+        P_ = (I - K * H_) * P_;
+    }
+
+    void SetF(Matrix2d F) {
+        F_ = F;
+    }
+
+    void SetP(Matrix2d P) {
+        P_ = P;
+    }
+
+    void SetQ(Matrix2d Q) {
+        Q_ = Q;
+    }
+
+    void SetH(Matrix2d H) {
+        H_ = H;
+    }
+
+    void SetR(Matrix2d R) {
+        R_ = R;
+    }
+
+private:
+    bool is_initialized_{ false };
+
+    // state matrix
+    Matrix2d x_;
+
+    // state transistion matrix
+    Matrix2d F_;
+
+    // state covariance matrix
+    Matrix2d P_;
+
+    // process covariance matrix
+    Matrix2d Q_;
+
+    // measurement matrix
+    Matrix2d H_;
+
+    // measurement covariance matrix
+    Matrix2d R_;
+};
+
 // float32
 class Matrix2d {
 public:
@@ -270,92 +356,6 @@ private:
     }
 
     bool _is_owner{ false };
-};
-
-// Prediction
-// 
-// x' = Fx + u
-// P' = PF(P_t) + Q_
-//
-// Measurement
-// y = z - H x'
-// S = HP'(H_t) + R
-// K = P'(H_t)(S_inv)
-// x = x' + Ky
-// P = (I - KH)P'
-//
-class KalmanFilter {
-
-public:
-    bool IsInit() {
-        return is_initialized_;
-    }
-
-    void Init(Matrix2d x) {
-        x_ = x;
-        is_initialized_ = true;
-    }
-
-    Matrix2d GetState() {
-        return x_;
-    }
-
-    void Predict() {
-        x_ = F_ * x_;
-        Matrix2d Ft = F_.t();
-        P_ = F_ * P_ * Ft + Q_;
-    }
-
-    void Measure(const Matrix2d& z) {
-        Matrix2d y = z - H_ * x_;
-        Matrix2d S = H_ * P_ * H_.t() + R_;
-        Matrix2d K = P_ * H_.t() * S.inv();
-        x_ = x_ + (K * y);
-        int size = x_.cols * x_.rows;
-        Matrix2d I = Matrix2d::eye(size, size);
-        P_ = (I - K * H_) * P_;
-    }
-
-    void SetF(Matrix2d F) {
-        F_ = F;
-    }
-
-    void SetP(Matrix2d P) {
-        P_ = P;
-    }
-
-    void SetQ(Matrix2d Q) {
-        Q_ = Q;
-    }
-
-    void SetH(Matrix2d H) {
-        H_ = H;
-    }
-
-    void SetR(Matrix2d R) {
-        R_ = R;
-    }
-
-private:
-    bool is_initialized_{ false };
-
-    // state matrix
-    Matrix2d x_;
-
-    // state transistion matrix
-    Matrix2d F_;
-
-    // state covariance matrix
-    Matrix2d P_;
-
-    // process covariance matrix
-    Matrix2d Q_;
-
-    // measurement matrix
-    Matrix2d H_;
-
-    // measurement covariance matrix
-    Matrix2d R_;
 };
 
 }
